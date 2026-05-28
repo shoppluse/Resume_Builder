@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Resume Wizard</title>
+    <title>Premium AI Resume Builder</title>
+    
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -17,20 +18,39 @@
         }
     </script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
     <!-- React & ReactDOM -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-    <!-- Babel -->
+    
+    <!-- Babel for JSX -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
     <!-- Framer Motion -->
     <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js"></script>
+    
+    <!-- html2pdf for native PDF downloading -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; margin: 0; overflow: hidden;}
-        .a4-page { aspect-ratio: 1 / 1.414; background: white; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15); }
-        /* Hide scrollbar for clean UI but allow scrolling */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; margin: 0; overflow: hidden; }
+        
+        /* A4 Page Formatting for PDF */
+        .a4-page {
+            width: 210mm;
+            min-height: 297mm;
+            background: white;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+            margin: 0 auto;
+        }
+        
+        /* Custom Scrollbar for the Editor */
+        .custom-scroll::-webkit-scrollbar { width: 6px; }
+        .custom-scroll::-webkit-scrollbar-track { background: transparent; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #475569; border-radius: 10px; }
+        
+        /* Hide UI elements during PDF generation */
+        .html2pdf__container { background: white !important; }
     </style>
 </head>
 <body>
@@ -40,54 +60,95 @@
         const { useState } = React;
         const { motion, AnimatePresence } = window.Motion;
 
-        // Define the sequence of questions
         const WIZARD_STEPS = [
             {
-                id: 'intro',
-                title: 'Let’s start with the basics.',
-                subtitle: 'What is your name and contact info?',
+                id: 'personal',
+                title: 'Personal Information',
+                subtitle: 'Let’s start with the basics.',
                 fields: [
                     { name: 'fullName', label: 'Full Name', type: 'text', placeholder: 'e.g. Alex Smith' },
-                    { name: 'email', label: 'Email Address', type: 'email', placeholder: 'alex@example.com' }
+                    { name: 'role', label: 'Professional Title', type: 'text', placeholder: 'e.g. Frontend Developer & Entrepreneur' },
+                    { name: 'email', label: 'Email', type: 'email', placeholder: 'alex@example.com' },
+                    { name: 'phone', label: 'Phone', type: 'text', placeholder: '+1 234 567 890' },
+                    { name: 'location', label: 'Location', type: 'text', placeholder: 'City, State, Country' },
+                    { name: 'links', label: 'Links (LinkedIn, GitHub, Portfolio)', type: 'text', placeholder: 'github.com/shoppluse, linkedin.com/in/alex' }
                 ]
             },
             {
-                id: 'role',
-                title: 'What do you do?',
-                subtitle: 'Enter your current or target professional title.',
+                id: 'summary',
+                title: 'Professional Summary',
+                subtitle: 'Tell us about yourself and your career objectives.',
                 fields: [
-                    { name: 'role', label: 'Professional Title', type: 'text', placeholder: 'e.g. Web Developer & Entrepreneur' }
+                    { name: 'targetRole', label: 'Target Job Role', type: 'text', placeholder: 'e.g. Senior Frontend Engineer' },
+                    { name: 'summary', label: 'Professional Summary', type: 'textarea', placeholder: 'Motivated web developer with strong knowledge in React and e-commerce platforms, seeking opportunities to build scalable rewards platforms.' }
                 ]
             },
             {
-                id: 'projects',
-                title: 'Highlight a major project.',
-                subtitle: 'What is a significant project you have built?',
+                id: 'education',
+                title: 'Education Details',
+                subtitle: 'Where did you study?',
                 fields: [
-                    { name: 'projectTitle', label: 'Project Name', type: 'text', placeholder: 'e.g. Shoppluse' },
-                    { name: 'projectDesc', label: 'Description', type: 'textarea', placeholder: 'e.g. Developed a cashback and affiliate platform with fully integrated 4-5 star Amazon product filtering...' }
+                    { name: 'degree', label: 'Degree & Specialization', type: 'text', placeholder: 'B.Sc in Computer Science' },
+                    { name: 'university', label: 'College / University', type: 'text', placeholder: 'Tech University' },
+                    { name: 'eduDuration', label: 'Start & End Year', type: 'text', placeholder: '2019 - 2023' },
+                    { name: 'cgpa', label: 'CGPA / Percentage', type: 'text', placeholder: '3.8 / 4.0' }
                 ]
             },
             {
                 id: 'skills',
-                title: 'What are your core skills?',
-                subtitle: 'List a few key technologies or domains you excel in.',
+                title: 'Skills & Technologies',
+                subtitle: 'What are your strongest technical and soft skills?',
                 fields: [
-                    { name: 'skills', label: 'Skills (comma separated)', type: 'text', placeholder: 'e.g. React, Tailwind, Home Automation, Social Media Marketing' }
+                    { name: 'techSkills', label: 'Technical Skills & Frameworks', type: 'text', placeholder: 'HTML, CSS, React.js, Tailwind, Node.js' },
+                    { name: 'softSkills', label: 'Soft Skills', type: 'text', placeholder: 'Leadership, Problem Solving, Agile' }
+                ]
+            },
+            {
+                id: 'experience',
+                title: 'Work Experience',
+                subtitle: 'List your most recent or relevant job role.',
+                fields: [
+                    { name: 'company', label: 'Company Name', type: 'text', placeholder: 'TechCorp Solutions' },
+                    { name: 'jobTitle', label: 'Job Title', type: 'text', placeholder: 'Frontend Developer' },
+                    { name: 'expDuration', label: 'Duration', type: 'text', placeholder: 'Jan 2024 - Present' },
+                    { name: 'responsibilities', label: 'Key Responsibilities & Achievements', type: 'textarea', placeholder: '• Developed and optimized backend APIs.\n• Built an automatic robotic cleaning prototype for internal office use.' }
+                ]
+            },
+            {
+                id: 'projects',
+                title: 'Key Projects',
+                subtitle: 'Highlight a major project or application you built.',
+                fields: [
+                    { name: 'projTitle', label: 'Project Title', type: 'text', placeholder: 'Shoppluse Affiliate Platform' },
+                    { name: 'projTech', label: 'Technologies Used', type: 'text', placeholder: 'React, Amazon API, Tailwind' },
+                    { name: 'projDesc', label: 'Project Description & Contribution', type: 'textarea', placeholder: '• Built a cashback website filtering high-rated Amazon products.\n• Integrated live rewards system for user purchases.' }
+                ]
+            },
+            {
+                id: 'extras',
+                title: 'Certifications & Extras',
+                subtitle: 'Add any final details to make your resume stand out.',
+                fields: [
+                    { name: 'certifications', label: 'Certifications', type: 'text', placeholder: 'AWS Certified Developer' },
+                    { name: 'languages', label: 'Languages Known', type: 'text', placeholder: 'English (Fluent), Spanish (Beginner)' },
+                    { name: 'interests', label: 'Interests / Hobbies', type: 'text', placeholder: 'Robotics, Financial Markets, Open Source Contributing' }
                 ]
             }
         ];
 
         function App() {
             const [currentStep, setCurrentStep] = useState(0);
-            const [direction, setDirection] = useState(1); // 1 for forward, -1 for backward
+            const [direction, setDirection] = useState(1);
+            const [isGenerating, setIsGenerating] = useState(false);
+            
             const [data, setData] = useState({
-                fullName: '',
-                email: '',
-                role: '',
-                projectTitle: '',
-                projectDesc: '',
-                skills: ''
+                fullName: '', role: '', email: '', phone: '', location: '', links: '',
+                targetRole: '', summary: '',
+                degree: '', university: '', eduDuration: '', cgpa: '',
+                techSkills: '', softSkills: '',
+                company: '', jobTitle: '', expDuration: '', responsibilities: '',
+                projTitle: '', projTech: '', projDesc: '',
+                certifications: '', languages: '', interests: ''
             });
 
             const handleNext = () => {
@@ -108,38 +169,47 @@
                 setData({ ...data, [e.target.name]: e.target.value });
             };
 
+            const generatePDF = () => {
+                setIsGenerating(true);
+                const element = document.getElementById('resume-pdf-content');
+                
+                const opt = {
+                    margin:       0,
+                    filename:     `${data.fullName || 'Resume'}_CV.pdf`,
+                    image:        { type: 'jpeg', quality: 0.98 },
+                    html2canvas:  { scale: 2, useCORS: true },
+                    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                };
+
+                html2pdf().set(opt).from(element).save().then(() => {
+                    setIsGenerating(false);
+                });
+            };
+
             const step = WIZARD_STEPS[currentStep];
 
-            // Animation variants for the sliding effect
             const variants = {
-                enter: (direction) => ({
-                    x: direction > 0 ? 50 : -50,
-                    opacity: 0
-                }),
-                center: {
-                    x: 0,
-                    opacity: 1
-                },
-                exit: (direction) => ({
-                    x: direction < 0 ? 50 : -50,
-                    opacity: 0
-                })
+                enter: (direction) => ({ x: direction > 0 ? 50 : -50, opacity: 0 }),
+                center: { x: 0, opacity: 1 },
+                exit: (direction) => ({ x: direction < 0 ? 50 : -50, opacity: 0 })
             };
 
             return (
-                <div className="flex h-screen w-full bg-slate-50">
+                <div className="flex h-screen w-full bg-slate-100 font-sans">
                     
-                    {/* Left Side: The Interactive Wizard */}
+                    {/* Left Panel: The AI Editor */}
                     <div className="w-full md:w-5/12 bg-brand text-white flex flex-col relative z-10 shadow-2xl">
                         
                         {/* Header */}
-                        <div className="p-8 pb-0 flex justify-between items-center">
+                        <div className="p-8 pb-0 flex justify-between items-center shrink-0">
                             <div className="text-xl font-bold tracking-tight">Resume<span className="text-accent">AI</span></div>
-                            <div className="text-sm font-medium text-slate-400">Step {currentStep + 1} of {WIZARD_STEPS.length}</div>
+                            <div className="text-sm font-medium text-slate-400 bg-surface px-3 py-1 rounded-full">
+                                {currentStep + 1} / {WIZARD_STEPS.length}
+                            </div>
                         </div>
 
                         {/* Progress Bar */}
-                        <div className="w-full bg-surface h-1 mt-6">
+                        <div className="w-full bg-surface h-1 mt-6 shrink-0">
                             <motion.div 
                                 className="bg-accent h-full" 
                                 initial={{ width: 0 }}
@@ -148,8 +218,8 @@
                             />
                         </div>
 
-                        {/* Question Area */}
-                        <div className="flex-1 flex flex-col justify-center px-12 py-8 relative overflow-hidden">
+                        {/* Form Area */}
+                        <div className="flex-1 overflow-y-auto custom-scroll relative px-8 py-8">
                             <AnimatePresence mode="wait" custom={direction}>
                                 <motion.div
                                     key={currentStep}
@@ -158,9 +228,8 @@
                                     initial="enter"
                                     animate="center"
                                     exit="exit"
-                                    transition={{ type: "tween", duration: 0.3 }}
-                                    className="w-full max-w-md absolute"
-                                    style={{ top: '50%', transform: 'translateY(-50%)' }}
+                                    transition={{ type: "tween", duration: 0.25 }}
+                                    className="w-full max-w-md mx-auto"
                                 >
                                     <h2 className="text-3xl font-bold mb-2">{step.title}</h2>
                                     <p className="text-slate-400 mb-8">{step.subtitle}</p>
@@ -168,15 +237,19 @@
                                     <div className="space-y-6">
                                         {step.fields.map(field => (
                                             <div key={field.name}>
-                                                <label className="block text-sm font-medium text-slate-300 mb-2">{field.label}</label>
+                                                <div className="flex justify-between mb-2">
+                                                    <label className="block text-sm font-medium text-slate-300">{field.label}</label>
+                                                    {field.type === 'textarea' && <span className="text-xs text-accent cursor-pointer hover:underline">✨ AI Enhance</span>}
+                                                </div>
+                                                
                                                 {field.type === 'textarea' ? (
                                                     <textarea 
                                                         name={field.name}
                                                         value={data[field.name]}
                                                         onChange={handleChange}
                                                         placeholder={field.placeholder}
-                                                        rows="4"
-                                                        className="w-full bg-surface border border-slate-700 rounded-lg px-4 py-3 text-white focus:ring-2 focus:ring-accent focus:border-transparent outline-none transition resize-none placeholder-slate-500"
+                                                        rows={field.name === 'responsibilities' || field.name === 'projDesc' ? 5 : 3}
+                                                        className="w-full bg-surface border border-slate-700 rounded-lg px-4 py-3 text-white focus:ring-2 focus:ring-accent focus:border-transparent outline-none transition resize-none placeholder-slate-600 text-sm"
                                                     />
                                                 ) : (
                                                     <input 
@@ -185,7 +258,7 @@
                                                         value={data[field.name]}
                                                         onChange={handleChange}
                                                         placeholder={field.placeholder}
-                                                        className="w-full bg-surface border border-slate-700 rounded-lg px-4 py-3 text-white focus:ring-2 focus:ring-accent focus:border-transparent outline-none transition placeholder-slate-500"
+                                                        className="w-full bg-surface border border-slate-700 rounded-lg px-4 py-3 text-white focus:ring-2 focus:ring-accent focus:border-transparent outline-none transition placeholder-slate-600 text-sm"
                                                     />
                                                 )}
                                             </div>
@@ -195,23 +268,28 @@
                             </AnimatePresence>
                         </div>
 
-                        {/* Navigation Footer */}
-                        <div className="p-8 pt-0 flex justify-between items-center mt-auto">
+                        {/* Footer Controls */}
+                        <div className="p-8 pt-6 flex justify-between items-center shrink-0 border-t border-slate-800 bg-brand">
                             <button 
                                 onClick={handlePrev}
-                                className={`px-6 py-2 rounded-md font-medium transition ${currentStep === 0 ? 'opacity-0 pointer-events-none' : 'text-slate-300 hover:text-white hover:bg-surface'}`}
+                                className={`px-6 py-2 rounded-md font-medium transition ${currentStep === 0 ? 'opacity-50 cursor-not-allowed text-slate-500' : 'text-slate-300 hover:text-white hover:bg-surface'}`}
+                                disabled={currentStep === 0}
                             >
                                 Back
                             </button>
                             
                             {currentStep === WIZARD_STEPS.length - 1 ? (
-                                <button className="bg-green-500 hover:bg-green-600 text-white px-8 py-3 rounded-lg font-semibold transition shadow-lg shadow-green-500/30 flex items-center gap-2">
-                                    Finish & Download PDF
+                                <button 
+                                    onClick={generatePDF}
+                                    disabled={isGenerating}
+                                    className="bg-green-600 hover:bg-green-500 text-white px-8 py-3 rounded-lg font-semibold transition shadow-lg shadow-green-900/50 flex items-center gap-2 disabled:opacity-70"
+                                >
+                                    {isGenerating ? 'Generating...' : 'Download PDF'}
                                 </button>
                             ) : (
                                 <button 
                                     onClick={handleNext}
-                                    className="bg-accent hover:bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold transition shadow-lg shadow-blue-500/30"
+                                    className="bg-accent hover:bg-blue-500 text-white px-8 py-3 rounded-lg font-semibold transition shadow-lg shadow-blue-900/50"
                                 >
                                     Continue
                                 </button>
@@ -219,55 +297,113 @@
                         </div>
                     </div>
 
-                    {/* Right Side: Live Document Preview */}
-                    <div className="hidden md:flex w-7/12 bg-slate-200 justify-center items-center p-8 overflow-y-auto">
-                        <motion.div 
-                            layout
-                            className="a4-page w-full max-w-2xl p-12 flex flex-col bg-white rounded-sm"
-                        >
-                            {/* Header Preview */}
-                            <div className="border-b border-slate-300 pb-6 mb-6">
-                                <h1 className="text-4xl font-bold text-slate-900 mb-1 tracking-tight">
-                                    {data.fullName || <span className="text-slate-300">Your Name</span>}
-                                </h1>
-                                <h2 className="text-lg font-medium text-accent mb-3">
-                                    {data.role || <span className="text-blue-200">Professional Title</span>}
-                                </h2>
-                                <div className="text-sm text-slate-500">
-                                    {data.email || 'email@example.com'}
-                                </div>
-                            </div>
-
-                            {/* Body Preview */}
-                            <div className="flex flex-col gap-6">
-                                {/* Projects Section */}
-                                <div>
-                                    <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider mb-2">Selected Project</h3>
-                                    <div className="mb-1 font-semibold text-slate-700">
-                                        {data.projectTitle || <span className="text-slate-300">Project Name</span>}
+                    {/* Right Panel: Live Document Preview */}
+                    <div className="hidden md:flex w-7/12 bg-slate-200 justify-center p-8 overflow-y-auto custom-scroll">
+                        
+                        {/* Wrapper to scale the A4 page down visually but keep real dimensions for PDF */}
+                        <div className="origin-top scale-[0.85] xl:scale-95 transition-transform duration-300 pb-20">
+                            
+                            <motion.div layout id="resume-pdf-content" className="a4-page p-12 flex flex-col text-slate-800 relative">
+                                
+                                {/* Header */}
+                                <div className="border-b-2 border-slate-800 pb-5 mb-5 text-center">
+                                    <h1 className="text-4xl font-bold uppercase tracking-wide text-slate-900 mb-1">
+                                        {data.fullName || 'Your Name'}
+                                    </h1>
+                                    <h2 className="text-lg font-semibold text-accent mb-3 tracking-wider">
+                                        {data.role || 'Professional Title'}
+                                    </h2>
+                                    <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs text-slate-600 font-medium">
+                                        {data.email && <span>{data.email}</span>}
+                                        {data.phone && <span>• {data.phone}</span>}
+                                        {data.location && <span>• {data.location}</span>}
                                     </div>
-                                    <p className="text-sm text-slate-600 leading-relaxed">
-                                        {data.projectDesc || <span className="text-slate-300">Description of your project and the technologies used will appear here.</span>}
-                                    </p>
+                                    <div className="flex flex-wrap justify-center gap-x-4 mt-1 text-xs text-slate-500">
+                                        {data.links}
+                                    </div>
                                 </div>
 
-                                {/* Skills Section */}
-                                <div>
-                                    <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider mb-2">Core Skills</h3>
-                                    <div className="flex flex-wrap gap-2">
-                                        {data.skills ? data.skills.split(',').map((skill, i) => (
-                                            <span key={i} className="px-3 py-1 bg-slate-100 text-slate-700 text-xs font-medium rounded-md">
-                                                {skill.trim()}
-                                            </span>
-                                        )) : (
-                                            <span className="px-3 py-1 bg-slate-50 text-slate-300 text-xs font-medium rounded-md border border-dashed border-slate-200">
-                                                Skills will appear here
-                                            </span>
+                                {/* Summary */}
+                                {(data.summary || data.targetRole) && (
+                                    <div className="mb-5">
+                                        <h3 className="text-sm font-bold text-slate-800 uppercase tracking-widest border-b border-slate-300 mb-2 pb-1">Professional Summary</h3>
+                                        <p className="text-xs text-slate-700 leading-relaxed text-justify">
+                                            {data.summary || 'Summary text will appear here.'}
+                                        </p>
+                                    </div>
+                                )}
+
+                                {/* Skills */}
+                                {(data.techSkills || data.softSkills) && (
+                                    <div className="mb-5">
+                                        <h3 className="text-sm font-bold text-slate-800 uppercase tracking-widest border-b border-slate-300 mb-2 pb-1">Skills</h3>
+                                        {data.techSkills && (
+                                            <div className="text-xs mb-1"><span className="font-bold text-slate-700">Technical:</span> {data.techSkills}</div>
+                                        )}
+                                        {data.softSkills && (
+                                            <div className="text-xs"><span className="font-bold text-slate-700">Soft Skills:</span> {data.softSkills}</div>
                                         )}
                                     </div>
-                                </div>
-                            </div>
-                        </motion.div>
+                                )}
+
+                                {/* Experience */}
+                                {(data.company || data.jobTitle) && (
+                                    <div className="mb-5">
+                                        <h3 className="text-sm font-bold text-slate-800 uppercase tracking-widest border-b border-slate-300 mb-2 pb-1">Work Experience</h3>
+                                        <div className="flex justify-between items-baseline mb-1">
+                                            <h4 className="text-sm font-bold text-slate-900">{data.jobTitle || 'Job Title'}</h4>
+                                            <span className="text-xs font-semibold text-slate-600">{data.expDuration || 'Date - Date'}</span>
+                                        </div>
+                                        <div className="text-xs font-medium text-accent mb-2">{data.company || 'Company Name'}</div>
+                                        <div className="text-xs text-slate-700 leading-relaxed whitespace-pre-line pl-3 border-l-2 border-slate-200">
+                                            {data.responsibilities || '• Responsibilities and achievements.'}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Projects */}
+                                {(data.projTitle || data.projDesc) && (
+                                    <div className="mb-5">
+                                        <h3 className="text-sm font-bold text-slate-800 uppercase tracking-widest border-b border-slate-300 mb-2 pb-1">Key Projects</h3>
+                                        <div className="flex justify-between items-baseline mb-1">
+                                            <h4 className="text-sm font-bold text-slate-900">{data.projTitle || 'Project Title'}</h4>
+                                        </div>
+                                        <div className="text-xs font-medium text-slate-500 mb-2 border-l-2 border-accent pl-2">{data.projTech || 'Technologies Used'}</div>
+                                        <div className="text-xs text-slate-700 leading-relaxed whitespace-pre-line pl-3">
+                                            {data.projDesc || '• Project description.'}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Education */}
+                                {(data.degree || data.university) && (
+                                    <div className="mb-5">
+                                        <h3 className="text-sm font-bold text-slate-800 uppercase tracking-widest border-b border-slate-300 mb-2 pb-1">Education</h3>
+                                        <div className="flex justify-between items-baseline mb-1">
+                                            <h4 className="text-sm font-bold text-slate-900">{data.degree || 'Degree Name'}</h4>
+                                            <span className="text-xs font-semibold text-slate-600">{data.eduDuration}</span>
+                                        </div>
+                                        <div className="flex justify-between items-baseline text-xs">
+                                            <span className="text-slate-700">{data.university || 'University Name'}</span>
+                                            {data.cgpa && <span className="font-medium">CGPA: {data.cgpa}</span>}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Extras */}
+                                {(data.certifications || data.languages || data.interests) && (
+                                    <div className="mb-5">
+                                        <h3 className="text-sm font-bold text-slate-800 uppercase tracking-widest border-b border-slate-300 mb-2 pb-1">Additional Information</h3>
+                                        <div className="grid grid-cols-2 gap-4 text-xs text-slate-700">
+                                            {data.certifications && <div><span className="font-bold">Certifications:</span><br/>{data.certifications}</div>}
+                                            {data.languages && <div><span className="font-bold">Languages:</span><br/>{data.languages}</div>}
+                                            {data.interests && <div className="col-span-2"><span className="font-bold">Interests:</span> {data.interests}</div>}
+                                        </div>
+                                    </div>
+                                )}
+
+                            </motion.div>
+                        </div>
                     </div>
                 </div>
             );
