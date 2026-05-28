@@ -11,16 +11,13 @@
     
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-    
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
     <div id="root"></div>
 
     <script type="text/babel">
-        // Extract React hooks from the global React object
         const { useState, useEffect, useRef, useCallback, createContext, useContext } = React;
 
         // ─── THEME CONTEXT ────────────────────────────────────────────────────────────
@@ -198,7 +195,6 @@
 
           return (
             <div style={{ paddingTop: "var(--nav-h)" }}>
-              {/* Hero */}
               <section style={{ position: "relative", minHeight: "92vh", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
                 <div className="hero-grid" />
                 <div style={{ position: "absolute", top: "20%", left: "15%", width: 400, height: 400, background: "radial-gradient(circle,rgba(59,130,246,.12),transparent 70%)", borderRadius: "50%", filter: "blur(40px)" }} />
@@ -223,7 +219,6 @@
                 </div>
               </section>
 
-              {/* Steps */}
               <section style={{ padding: "80px 24px", maxWidth: 900, margin: "0 auto" }}>
                 <div style={{ textAlign: "center", marginBottom: 56 }}>
                   <p className="badge" style={{ marginBottom: 16 }}>How It Works</p>
@@ -241,7 +236,6 @@
                 </div>
               </section>
 
-              {/* Features */}
               <section style={{ padding: "80px 24px", background: "rgba(255,255,255,.015)" }}>
                 <div style={{ maxWidth: 1100, margin: "0 auto" }}>
                   <div style={{ textAlign: "center", marginBottom: 56 }}>
@@ -262,7 +256,6 @@
                 </div>
               </section>
 
-              {/* Testimonials */}
               <section style={{ padding: "80px 24px", maxWidth: 1100, margin: "0 auto" }}>
                 <div style={{ textAlign: "center", marginBottom: 56 }}>
                   <p className="badge" style={{ marginBottom: 16 }}>Testimonials</p>
@@ -287,7 +280,6 @@
                 </div>
               </section>
 
-              {/* FAQ */}
               <section style={{ padding: "80px 24px", background: "rgba(255,255,255,.015)" }}>
                 <div style={{ maxWidth: 720, margin: "0 auto" }}>
                   <div style={{ textAlign: "center", marginBottom: 56 }}>
@@ -309,7 +301,6 @@
                 </div>
               </section>
 
-              {/* CTA */}
               <section style={{ padding: "100px 24px", textAlign: "center" }}>
                 <div style={{ maxWidth: 600, margin: "0 auto" }}>
                   <h2 className="section-title" style={{ marginBottom: 20 }}>Your Dream Job is One Resume Away</h2>
@@ -320,7 +311,6 @@
                 </div>
               </section>
 
-              {/* Footer */}
               <footer style={{ borderTop: "1px solid rgba(255,255,255,.06)", padding: "40px 32px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 16 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <div style={{ width: 28, height: 28, background: "linear-gradient(135deg,#2563eb,#7c3aed)", borderRadius: 7, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>✦</div>
@@ -359,7 +349,6 @@
                     <div key={t.id} className="card" style={{ overflow: "hidden", cursor: "pointer", transition: "transform .2s,border-color .2s" }}
                       onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-6px)"; e.currentTarget.style.borderColor = "rgba(59,130,246,.3)"; }}
                       onMouseLeave={e => { e.currentTarget.style.transform = ""; e.currentTarget.style.borderColor = ""; }}>
-                      {/* Template preview mockup */}
                       <div style={{ height: 220, background: "#f8fafc", position: "relative", overflow: "hidden", borderBottom: "1px solid rgba(0,0,0,.06)" }}>
                         <div style={{ position: "absolute", inset: 0, background: "#fff", margin: 16, borderRadius: 8, boxShadow: "0 4px 20px rgba(0,0,0,.08)", padding: 14, fontSize: 0 }}>
                           <div style={{ height: 8, background: t.color, borderRadius: 4, marginBottom: 8 }} />
@@ -461,10 +450,42 @@
           );
         }
 
-        // ─── LOGIN PAGE ────────────────────────────────────────────────────────────────
+        // ─── LOGIN PAGE (WITH GOOGLE SHEETS FETCH EXAMPLE) ─────────────────────────
         function LoginPage({ setPage }) {
           const [isLogin, setIsLogin] = useState(true);
           const [form, setForm] = useState({ email: "", password: "", name: "" });
+          const [loading, setLoading] = useState(false);
+
+          const handleSubmit = async () => {
+            setLoading(true);
+            
+            // REPLACE THIS URL with your actual Google Apps Script Web App URL
+            const GOOGLE_SHEETS_SCRIPT_URL = "YOUR_GOOGLE_APPS_SCRIPT_URL_HERE"; 
+            
+            try {
+              if (GOOGLE_SHEETS_SCRIPT_URL !== "YOUR_GOOGLE_APPS_SCRIPT_URL_HERE") {
+                await fetch(GOOGLE_SHEETS_SCRIPT_URL, {
+                  method: 'POST',
+                  mode: 'no-cors', // Important for Google Script
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    type: isLogin ? "LOGIN" : "SIGNUP",
+                    name: form.name || "N/A",
+                    email: form.email,
+                    timestamp: new Date().toISOString()
+                  })
+                });
+              }
+              // Proceed to builder regardless of success for this demo
+              setPage("builder");
+            } catch (err) {
+              console.error("Failed to log to sheet", err);
+              setPage("builder");
+            } finally {
+              setLoading(false);
+            }
+          };
+
           return (
             <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
               <div className="card" style={{ width: "100%", maxWidth: 440, padding: 48 }}>
@@ -489,9 +510,11 @@
                     <input type="password" placeholder="••••••••" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} />
                   </div>
                   {isLogin && <p style={{ textAlign: "right", fontSize: 13, color: "#3b82f6", cursor: "pointer", marginTop: -8 }}>Forgot password?</p>}
-                  <button className="btn-primary" style={{ justifyContent: "center", width: "100%", padding: "14px" }} onClick={() => setPage("builder")}>
-                    {isLogin ? "Sign In" : "Create Account"} →
+                  
+                  <button className="btn-primary" style={{ justifyContent: "center", width: "100%", padding: "14px" }} onClick={handleSubmit} disabled={loading}>
+                    {loading ? "Processing..." : (isLogin ? "Sign In →" : "Create Account →")}
                   </button>
+                  
                   <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
                     <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,.07)" }} />
                     <span style={{ fontSize: 12, color: "#475569" }}>or continue with</span>
@@ -593,8 +616,6 @@
         }
 
         // ─── AI SIMULATION ────────────────────────────────────────────────────────────
-        // Replaced direct fetch to avoid Browser CORS errors. This ensures the 
-        // prototype actually "works" and feels magical when the user clicks generate.
         async function callAI(prompt) {
           return new Promise((resolve) => {
             setTimeout(() => {
@@ -607,9 +628,60 @@
                 } else {
                     resolve("Successfully executed project requirements to ensure alignment with organizational goals and client expectations.");
                 }
-            }, 1500); // Simulate network delay
+            }, 1500);
           });
         }
+
+        // ─── EXTRACTED SUB-COMPONENTS TO PREVENT FOCUS LOSS ───────────────────────────
+        const SectionHeader = ({ title, desc }) => (
+          <div style={{ marginBottom: 28 }}>
+            <h2 style={{ fontFamily: "var(--font-display)", fontSize: 24, color: "#f1f5f9", marginBottom: 6 }}>{title}</h2>
+            {desc && <p style={{ fontSize: 14, color: "#475569" }}>{desc}</p>}
+          </div>
+        );
+
+        const Field = ({ label, name, type = "text", placeholder, value, onChange, rows }) => (
+          <div>
+            <label>{label}</label>
+            {rows ? (
+              <textarea placeholder={placeholder} value={value} onChange={e => onChange(e.target.value)} rows={rows} style={{ resize: "vertical" }} />
+            ) : (
+              <input type={type} placeholder={placeholder} value={value} onChange={e => onChange(e.target.value)} />
+            )}
+          </div>
+        );
+
+        const Grid = ({ children, cols = 2 }) => (
+          <div style={{ display: "grid", gridTemplateColumns: `repeat(${cols},1fr)`, gap: 16 }}>{children}</div>
+        );
+
+        const AddButton = ({ onClick, label = "Add Another" }) => (
+          <button onClick={onClick} style={{ background: "rgba(59,130,246,.1)", color: "#60a5fa", border: "1px dashed rgba(59,130,246,.3)", borderRadius: 8, padding: "10px 20px", cursor: "pointer", fontSize: 13, width: "100%", marginTop: 8 }}>
+            + {label}
+          </button>
+        );
+
+        const RemoveButton = ({ onClick }) => (
+          <button onClick={onClick} style={{ background: "rgba(239,68,68,.1)", color: "#f87171", border: "1px solid rgba(239,68,68,.15)", borderRadius: 6, padding: "6px 12px", cursor: "pointer", fontSize: 12 }}>
+            Remove
+          </button>
+        );
+
+        const AIButton = ({ onClick, loading }) => (
+          <button className="btn-primary btn-sm" style={{ background: "linear-gradient(135deg,#7c3aed,#6d28d9)", marginTop: 8 }} disabled={loading} onClick={onClick}>
+            {loading ? "✦ Generating..." : "✦ AI Generate"}
+          </button>
+        );
+
+        const ItemCard = ({ children, onRemove, index }) => (
+          <div className="card" style={{ padding: 24, marginBottom: 16 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
+              <span style={{ fontSize: 12, color: "#334155", fontWeight: 600, textTransform: "uppercase", letterSpacing: ".06em" }}>Entry #{index + 1}</span>
+              <RemoveButton onClick={onRemove} />
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>{children}</div>
+          </div>
+        );
 
         // ─── RESUME BUILDER PAGE ───────────────────────────────────────────────────────
         function BuilderPage() {
@@ -627,7 +699,6 @@
           const [jdText, setJdText] = useState("");
           const [aiOutput, setAiOutput] = useState({});
 
-          // Auto-save
           useEffect(() => {
             const t = setTimeout(() => {
               localStorage.setItem("resumeai_data", JSON.stringify(resume));
@@ -636,7 +707,6 @@
             return () => clearTimeout(t);
           }, [resume]);
 
-          // ATS Score calculation
           useEffect(() => {
             const p = resume.personal;
             const score = Math.min(98, Math.round(
@@ -697,7 +767,6 @@
 
           return (
             <div style={{ height: "100vh", display: "flex", flexDirection: "column", paddingTop: "var(--nav-h)" }}>
-              {/* Builder Topbar */}
               <div style={{ height: 52, background: "rgba(15,15,20,.95)", borderBottom: "1px solid rgba(255,255,255,.07)", display: "flex", alignItems: "center", paddingLeft: 16, paddingRight: 24, gap: 16, backdropFilter: "blur(12px)", flexShrink: 0 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginRight: "auto" }}>
                   <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#22c55e" }} />
@@ -705,7 +774,6 @@
                     {lastSaved ? `Saved ${lastSaved.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}` : "Auto-saving..."}
                   </span>
                 </div>
-                {/* ATS Score */}
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <div style={{ width: 36, height: 36, borderRadius: "50%", background: `conic-gradient(${atsScore > 70 ? "#22c55e" : atsScore > 40 ? "#f59e0b" : "#ef4444"} ${atsScore * 3.6}deg, rgba(255,255,255,.08) 0)`, display: "flex", alignItems: "center", justifyContent: "center" }}>
                     <div style={{ width: 26, height: 26, borderRadius: "50%", background: "#0a0a0f", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 700, color: "#e2e8f0" }}>{atsScore}</div>
@@ -729,9 +797,7 @@
                 </div>
               </div>
 
-              {/* Main Layout */}
               <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
-                {/* Sidebar Nav */}
                 <div style={{ width: 220, background: "rgba(10,10,15,.95)", borderRight: "1px solid rgba(255,255,255,.06)", overflowY: "auto", flexShrink: 0 }}>
                   <div style={{ padding: "16px 12px", display: "flex", flexDirection: "column", gap: 2 }}>
                     {sections.map(s => (
@@ -745,7 +811,6 @@
                   </div>
                 </div>
 
-                {/* Editor Panel */}
                 <div style={{ flex: 1, overflowY: "auto", background: "#070711" }}>
                   <div style={{ maxWidth: 720, margin: "0 auto", padding: "32px 32px" }}>
                     <SectionEditor
@@ -762,7 +827,6 @@
                   </div>
                 </div>
 
-                {/* Preview Panel */}
                 {showPreview && (
                   <div style={{ width: "45%", background: "#f0f4f8", overflowY: "auto", borderLeft: "1px solid rgba(255,255,255,.06)", flexShrink: 0 }}>
                     <ResumePreview resume={resume} theme={activeTemplate} />
@@ -775,62 +839,6 @@
 
         // ─── SECTION EDITOR ────────────────────────────────────────────────────────────
         function SectionEditor({ section, resume, updatePersonal, updateResume, addListItem, removeListItem, updateListItem, addSkill, removeSkill, skillInput, setSkillInput, skillCategory, setSkillCategory, addInterest, runAI, aiLoading, aiOutput, jdText, setJdText, atsScore }) {
-
-          const SectionHeader = ({ title, desc }) => (
-            <div style={{ marginBottom: 28 }}>
-              <h2 style={{ fontFamily: "var(--font-display)", fontSize: 24, color: "#f1f5f9", marginBottom: 6 }}>{title}</h2>
-              {desc && <p style={{ fontSize: 14, color: "#475569" }}>{desc}</p>}
-            </div>
-          );
-
-          const Field = ({ label, name, type = "text", placeholder, value, onChange, rows }) => (
-            <div>
-              <label>{label}</label>
-              {rows ? (
-                <textarea placeholder={placeholder} value={value} onChange={e => onChange(e.target.value)} rows={rows} style={{ resize: "vertical" }} />
-              ) : (
-                <input type={type} placeholder={placeholder} value={value} onChange={e => onChange(e.target.value)} />
-              )}
-            </div>
-          );
-
-          const Grid = ({ children, cols = 2 }) => (
-            <div style={{ display: "grid", gridTemplateColumns: `repeat(${cols},1fr)`, gap: 16 }}>{children}</div>
-          );
-
-          const AddButton = ({ onClick, label = "Add Another" }) => (
-            <button onClick={onClick} style={{ background: "rgba(59,130,246,.1)", color: "#60a5fa", border: "1px dashed rgba(59,130,246,.3)", borderRadius: 8, padding: "10px 20px", cursor: "pointer", fontSize: 13, width: "100%", marginTop: 8 }}>
-              + {label}
-            </button>
-          );
-
-          const RemoveButton = ({ onClick }) => (
-            <button onClick={onClick} style={{ background: "rgba(239,68,68,.1)", color: "#f87171", border: "1px solid rgba(239,68,68,.15)", borderRadius: 6, padding: "6px 12px", cursor: "pointer", fontSize: 12 }}>
-              Remove
-            </button>
-          );
-
-          const AIButton = ({ keyName, label, loading }) => (
-            <button className="btn-primary btn-sm" style={{ background: "linear-gradient(135deg,#7c3aed,#6d28d9)", marginTop: 8 }} disabled={loading} onClick={() => {
-              const p = resume.personal;
-              const prompt = keyName === "summary"
-                ? `Write a professional 3-sentence resume summary for: Name: ${p.fullName}, Title: ${p.title}, Experience: ${resume.experience.map(e => e.role + " at " + e.company).join(", ")}, Skills: ${Object.values(resume.skills).flat().slice(0, 8).join(", ")}. Be concise and impactful. No formatting, just the paragraph.`
-                : `Convert this work responsibility into a strong, quantified resume bullet point (start with action verb): "${label}". Return only the bullet point text.`;
-              runAI(keyName, prompt);
-            }}>
-              {loading ? "✦ Generating..." : "✦ AI Generate"}
-            </button>
-          );
-
-          const ItemCard = ({ children, onRemove, index }) => (
-            <div className="card" style={{ padding: 24, marginBottom: 16 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
-                <span style={{ fontSize: 12, color: "#334155", fontWeight: 600, textTransform: "uppercase", letterSpacing: ".06em" }}>Entry #{index + 1}</span>
-                <RemoveButton onClick={onRemove} />
-              </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>{children}</div>
-            </div>
-          );
 
           if (section === "personal") return (
             <div className="fade-in">
@@ -856,7 +864,13 @@
               <div className="card" style={{ padding: 28 }}>
                 <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
                   <Field label="Write your summary (or use AI to generate it)" placeholder="Motivated engineer with 3+ years of experience in..." value={resume.summary} onChange={v => updateResume("summary", v)} rows={5} />
-                  <AIButton keyName="summary" label="" loading={aiLoading.summary} />
+                  <AIButton 
+                    loading={aiLoading.summary} 
+                    onClick={() => {
+                      const p = resume.personal;
+                      runAI("summary", `Write a professional 3-sentence resume summary for: Name: ${p.fullName}, Title: ${p.title}, Experience: ${resume.experience.map(e => e.role + " at " + e.company).join(", ")}, Skills: ${Object.values(resume.skills).flat().slice(0, 8).join(", ")}. Be concise and impactful. No formatting, just the paragraph.`);
+                    }} 
+                  />
                   {aiOutput.summary && (
                     <div style={{ background: "rgba(124,58,237,.08)", border: "1px solid rgba(124,58,237,.2)", borderRadius: 10, padding: 16 }}>
                       <p style={{ fontSize: 12, color: "#a78bfa", marginBottom: 8, fontWeight: 600 }}>✦ AI Generated</p>
@@ -896,7 +910,6 @@
             <div className="fade-in">
               <SectionHeader title="Skills" desc="Showcase your technical and professional competencies." />
               <div className="card" style={{ padding: 28 }}>
-                {/* Quick suggestions */}
                 <div style={{ marginBottom: 24 }}>
                   <label style={{ marginBottom: 10 }}>Quick Suggestions by Domain</label>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
@@ -910,7 +923,6 @@
                     ))}
                   </div>
                 </div>
-                {/* Skill Categories */}
                 {[
                   ["technical", "Technical Skills"],
                   ["programming", "Programming Languages"],
@@ -960,7 +972,10 @@
                   </Grid>
                   <Field label="Responsibilities & Duties" placeholder="Led backend development..." value={e.responsibilities} onChange={v => updateListItem("experience", e.id, "responsibilities", v)} rows={3} />
                   {aiLoading[`exp_${e.id}`] ? <p style={{ fontSize: 13, color: "#a78bfa" }} className="pulse">✦ AI is polishing your bullets...</p> : (
-                    <AIButton keyName={`exp_${e.id}`} label={e.responsibilities} loading={false} />
+                    <AIButton 
+                      loading={false} 
+                      onClick={() => runAI(`exp_${e.id}`, `Convert this work responsibility into a strong, quantified resume bullet point (start with action verb): "${e.responsibilities}". Return only the bullet point text.`)} 
+                    />
                   )}
                   {aiOutput[`exp_${e.id}`] && (
                     <div style={{ background: "rgba(124,58,237,.08)", border: "1px solid rgba(124,58,237,.2)", borderRadius: 10, padding: 14 }}>
@@ -1151,7 +1166,6 @@
           if (section === "ats") return (
             <div className="fade-in">
               <SectionHeader title="ATS Score & Optimizer" desc="Optimize your resume for Applicant Tracking Systems." />
-              {/* Score Card */}
               <div className="card" style={{ padding: 28, marginBottom: 20 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 32 }}>
                   <div style={{ position: "relative", width: 100, height: 100, flexShrink: 0 }}>
@@ -1191,7 +1205,6 @@
                   ))}
                 </div>
               </div>
-              {/* Job Description Matcher */}
               <div className="card" style={{ padding: 28 }}>
                 <h3 style={{ fontSize: 16, fontWeight: 600, color: "#f1f5f9", marginBottom: 6 }}>Job Description Matcher</h3>
                 <p style={{ fontSize: 13, color: "#475569", marginBottom: 16 }}>Paste a job description to get tailored keyword suggestions.</p>
@@ -1275,7 +1288,6 @@
 
           return (
             <div id="resume-preview-content" style={{ background: "#fff", margin: 16, borderRadius: 8, boxShadow: "0 4px 24px rgba(0,0,0,.15)", fontFamily: "'DM Sans',sans-serif", color: theme.text, fontSize: 10.5, lineHeight: 1.5, overflow: "hidden", minHeight: 800 }}>
-              {/* Header */}
               <div style={{ background: theme.primary, color: "#fff", padding: "22px 24px 18px" }}>
                 <h1 style={{ fontSize: 22, fontWeight: 700, fontFamily: "var(--font-display)", marginBottom: 3, color: "#fff" }}>
                   {p.fullName || "Your Full Name"}
@@ -1291,7 +1303,6 @@
               </div>
 
               <div style={{ padding: "14px 24px 24px" }}>
-                {/* Summary */}
                 {resume.summary && (
                   <>
                     <SectionH title="Professional Summary" />
@@ -1299,7 +1310,6 @@
                   </>
                 )}
 
-                {/* Education */}
                 {resume.education.some(e => e.college) && (
                   <>
                     <SectionH title="Education" />
@@ -1315,7 +1325,6 @@
                   </>
                 )}
 
-                {/* Skills */}
                 {allSkills.length > 0 && (
                   <>
                     <SectionH title="Skills" />
@@ -1327,7 +1336,6 @@
                   </>
                 )}
 
-                {/* Experience */}
                 {resume.experience.some(e => e.company) && (
                   <>
                     <SectionH title="Work Experience" />
@@ -1345,7 +1353,6 @@
                   </>
                 )}
 
-                {/* Internships */}
                 {resume.internships.some(e => e.company) && (
                   <>
                     <SectionH title="Internships" />
@@ -1362,7 +1369,6 @@
                   </>
                 )}
 
-                {/* Projects */}
                 {resume.projects.some(p => p.title) && (
                   <>
                     <SectionH title="Projects" />
@@ -1380,7 +1386,6 @@
                   </>
                 )}
 
-                {/* Certifications */}
                 {resume.certifications.some(c => c.name) && (
                   <>
                     <SectionH title="Certifications" />
@@ -1393,7 +1398,6 @@
                   </>
                 )}
 
-                {/* Achievements */}
                 {resume.achievements.some(a => a.title) && (
                   <>
                     <SectionH title="Achievements" />
@@ -1410,7 +1414,6 @@
                   </>
                 )}
 
-                {/* Publications */}
                 {resume.publications.some(p => p.title) && (
                   <>
                     <SectionH title="Publications" />
@@ -1423,7 +1426,6 @@
                   </>
                 )}
 
-                {/* Languages */}
                 {resume.languages.some(l => l.language) && (
                   <>
                     <SectionH title="Languages" />
@@ -1435,7 +1437,6 @@
                   </>
                 )}
 
-                {/* Interests */}
                 {resume.interests.length > 0 && (
                   <>
                     <SectionH title="Interests" />
@@ -1474,7 +1475,6 @@
           );
         }
 
-        // Render the app using the React 18 createRoot API
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
     </script>
